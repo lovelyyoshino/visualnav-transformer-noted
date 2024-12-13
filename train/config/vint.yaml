@@ -1,96 +1,96 @@
-project_name: vint-release
-run_name: vint-5c
+project_name: vint-release  # 项目名称
+run_name: vint-5c            # 运行名称
 
 # training setup
-use_wandb: True # set to false if you don't want to log to wandb
-train: True
-batch_size: 256
-epochs: 100
-gpu_ids: [0]
-num_workers: 12
-lr: 5e-4
-optimizer: adamw
-clipping: False
-max_norm: 1.
-scheduler: "cosine"
-warmup: True 
-warmup_epochs: 4
-cyclic_period: 10
-plateau_patience: 3
-plateau_factor: 0.5
-seed: 0
+use_wandb: True              # 是否使用 Weights & Biases 进行日志记录，设置为 False 则不记录
+train: True                  # 是否开始训练
+batch_size: 256              # 每个批次的样本数量
+epochs: 100                  # 训练的总轮数
+gpu_ids: [0]                 # 使用的 GPU ID 列表
+num_workers: 12              # 数据加载时使用的工作线程数量
+lr: 5e-4                     # 学习率
+optimizer: adamw             # 优化器类型，这里使用 AdamW
+clipping: False              # 是否使用梯度裁剪
+max_norm: 1.                 # 梯度裁剪的最大范数
+scheduler: "cosine"          # 学习率调度策略，这里使用余弦退火
+warmup: True                 # 是否使用学习率预热
+warmup_epochs: 4             # 预热的轮数
+cyclic_period: 10            # 循环周期，用于循环学习率调度
+plateau_patience: 3          # 当验证损失不再下降时，等待的轮数
+plateau_factor: 0.5          # 验证损失未改善时，学习率降低的因子
+seed: 0                      # 随机种子，用于结果复现
 
 # model params
-model_type: vint
-obs_encoder: "efficientnet-b0" # by default, this is imagenet pretrained
-obs_encoding_size: 512
-mha_num_attention_heads: 4
-mha_num_attention_layers: 4
-mha_ff_dim_factor: 4
-late_fusion: False
+model_type: vint             # 模型类型，这里使用 VINT
+obs_encoder: "efficientnet-b0" # 观察编码器类型，默认使用 ImageNet 预训练的 EfficientNet-B0
+obs_encoding_size: 512       # 观察编码后的特征维度
+mha_num_attention_heads: 4   # 多头自注意力机制中的头数
+mha_num_attention_layers: 4  # 自注意力层的数量
+mha_ff_dim_factor: 4         # 前馈网络维度因子
+late_fusion: False           # 是否使用后融合策略
 
 # normalization for the action space
-normalize: True
+normalize: True              # 是否对动作空间进行归一化
 
 # context
-context_type: temporal
-context_size: 5
+context_type: temporal       # 上下文类型，这里使用时间上下文
+context_size: 5              # 上下文窗口大小
 # tradeoff between action and distance prediction loss
-alpha: 0.5
+alpha: 0.5                   # 动作与距离预测损失之间的权衡系数
 
-# distance bounds for distance and action and distance predictions 
+# distance bounds for distance and action predictions 
 distance:
-  min_dist_cat: 0
-  max_dist_cat: 20
+  min_dist_cat: 0            # 距离分类的最小值
+  max_dist_cat: 20           # 距离分类的最大值
 action:
-  min_dist_cat: 0
-  max_dist_cat: 10
-close_far_threshold: 10 # distance threshold used to seperate the close and the far  subgoals that are sampled per datapoint
+  min_dist_cat: 0            # 动作分类的最小值
+  max_dist_cat: 10           # 动作分类的最大值
+close_far_threshold: 10      # 用于区分近目标和远目标的距离阈值
 
 # action output params
-len_traj_pred: 5
-learn_angle: True
+len_traj_pred: 5             # 轨迹预测的长度
+learn_angle: True             # 是否学习角度信息
 
 # dataset specific parameters
-image_size: [85, 64] # width, height
-goal_type: "image"
+image_size: [85, 64]         # 输入图像的宽度和高度
+goal_type: "image"           # 目标类型，这里使用图像作为目标
 
 datasets:
   recon:
-    data_folder: /home/<username>/vint_dataset/recon
-    train: /home/<username>/data_splits/recon/train/ # path to train folder with traj_names.txt
-    test: /home/<username>/data_splits/recon/test/ # path to test folder with traj_names.txt
-    end_slack: 3 # because many trajectories end in collisions
-    goals_per_obs: 1 # how many goals are sampled per observation
-    negative_mining: True # negative mining from the ViNG paper (Shah et al.)
+    data_folder: /home/<username>/vint_dataset/recon  # 数据集文件夹路径
+    train: /home/<username>/data_splits/recon/train/   # 训练数据路径
+    test: /home/<username>/data_splits/recon/test/     # 测试数据路径
+    end_slack: 3               # 因为许多轨迹以碰撞结束，所以留出的缓冲
+    goals_per_obs: 1           # 每个观察采样的目标数量
+    negative_mining: True       # 从 ViNG 论文中引入的负样本挖掘
   go_stanford:
-    data_folder: /home/<username>/vint_dataset/go_stanford_cropped # datasets/stanford_go_new
-    train: /home/<username>/data_splits/go_stanford/train/
-    test: /home/<username>/data_splits/go_stanford/test/
-    end_slack: 0
-    goals_per_obs: 2 # increase dataset size
-    negative_mining: True
+    data_folder: /home/<username>/vint_dataset/go_stanford_cropped # 数据集文件夹路径
+    train: /home/<username>/data_splits/go_stanford/train/          # 训练数据路径
+    test: /home/<username>/data_splits/go_stanford/test/            # 测试数据路径
+    end_slack: 0                # 不需要额外的缓冲
+    goals_per_obs: 2            # 增加数据集大小
+    negative_mining: True        # 启用负样本挖掘
   cory_hall:
     data_folder: /home/<username>/vint_dataset/cory_hall/
     train: /home/<username>/data_splits/cory_hall/train/
     test: /home/<username>/data_splits/cory_hall/test/
-    end_slack: 3 # because many trajectories end in collisions
-    goals_per_obs: 1
-    negative_mining: True
+    end_slack: 3                # 留出缓冲
+    goals_per_obs: 1            # 每个观察采样的目标数量
+    negative_mining: True        # 启用负样本挖掘
   tartan_drive:
     data_folder: /home/<username>/vint_dataset/tartan_drive/
     train: /home/<username>/data_splits/tartan_drive/train/
     test: /home/<username>/data_splits/tartan_drive/test/
-    end_slack: 3 # because many trajectories end in collisions
-    goals_per_obs: 1
-    negative_mining: True
+    end_slack: 3                # 留出缓冲
+    goals_per_obs: 1            # 每个观察采样的目标数量
+    negative_mining: True        # 启用负样本挖掘
   sacson:
     data_folder: /home/<username>/vint_dataset/sacson/
     train: /home/<username>/data_splits/sacson/train/
     test: /home/<username>/data_splits/sacson/test/
-    end_slack: 3 # because many trajectories end in collisions
-    goals_per_obs: 1
-    negative_mining: True
+    end_slack: 3                # 留出缓冲
+    goals_per_obs: 1            # 每个观察采样的目标数量
+    negative_mining: True        # 启用负样本挖掘
 
   # private datasets (uncomment if you have access)
   # seattle:
@@ -110,10 +110,10 @@ datasets:
 
 # logging stuff
 ## =0 turns off
-print_log_freq: 100 # in iterations
-image_log_freq: 1000 #0 # in iterations
-num_images_log: 8 #0 
-pairwise_test_freq: 0 # in epochs
-eval_fraction: 0.25
-wandb_log_freq: 10 # in iterations
-eval_freq: 1 # in epochs
+print_log_freq: 100          # 打印日志的频率（以迭代次数为单位）
+image_log_freq: 1000         # 图像日志记录的频率（以迭代次数为单位）
+num_images_log: 8            # 日志记录的图像数量
+pairwise_test_freq: 0        # 成对测试的频率（以轮数为单位）
+eval_fraction: 0.25           # 评估时使用的数据比例
+wandb_log_freq: 10            # Weights & Biases 日志记录的频率（以迭代次数为单位）
+eval_freq: 1                  # 评估的频率（以轮数为单位）

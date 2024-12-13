@@ -1,63 +1,59 @@
-
-# global params for diffusion model
-# normalized min and max
+# 全局参数用于扩散模型
+# 归一化的最小值和最大值
 action_stats:
-  min: [-2.5, -4] # [min_dx, min_dy]
-  max: [5, 4] # [max_dx, max_dy]
+  min: [-2.5, -4] # [min_dx, min_dy] # 最小变化量，分别表示x轴和y轴的最小位移
+  max: [5, 4] # [max_dx, max_dy] # 最大变化量，分别表示x轴和y轴的最大位移
 
-# data specific params
+# 数据特定参数
 recon:
-  metric_waypoint_spacing: 0.25 # average spacing between waypoints (meters)
+  metric_waypoint_spacing: 0.25 # 路径点之间的平均间距（米）
 
-  # OPTIONAL (FOR VISUALIZATION ONLY)
-  camera_metrics: # https://docs.opencv.org/4.x/dc/dbb/tutorial_py_calibration.html
-    camera_height: 0.95 # meters
-    camera_x_offset: 0.45 # distance between the center of the robot and the forward facing camera
-    camera_matrix:
-      fx: 272.547000
-      fy: 266.358000
-      cx: 320.000000
-      cy: 220.000000
-    dist_coeffs:
-      k1: -0.038483
-      k2: -0.010456
-      p1: 0.003930
-      p2: -0.001007
-      k3: 0.0
+  # 可选项（仅用于可视化）
+  camera_metrics: # 摄像头相关参数，参考文档：https://docs.opencv.org/4.x/dc/dbb/tutorial_py_calibration.html
+    camera_height: 0.95 # 摄像头高度（米）
+    camera_x_offset: 0.45 # 机器人中心与前向摄像头之间的距离
+    camera_matrix: # 相机内参矩阵
+      fx: 272.547000 # 焦距在x方向上的像素数
+      fy: 266.358000 # 焦距在y方向上的像素数
+      cx: 320.000000 # 主点x坐标
+      cy: 220.000000 # 主点y坐标
+    dist_coeffs: # 畸变系数
+      k1: -0.038483 # 径向畸变系数k1
+      k2: -0.010456 # 径向畸变系数k2
+      p1: 0.003930 # 切向畸变系数p1
+      p2: -0.001007 # 切向畸变系数p2
+      k3: 0.0 # 径向畸变系数k3
 
 scand:
-  metric_waypoint_spacing: 0.38
+  metric_waypoint_spacing: 0.38 # 'scand'数据集路径点之间的平均间距（米）
 
 tartan_drive:
-  metric_waypoint_spacing: 0.72
+  metric_waypoint_spacing: 0.72 # 'tartan_drive'数据集路径点之间的平均间距（米）
 
 go_stanford:
-  metric_waypoint_spacing: 0.12
+  metric_waypoint_spacing: 0.12 # 'go_stanford'数据集路径点之间的平均间距（米）
 
-# private datasets:
+# 私有数据集：
 cory_hall:
-  metric_waypoint_spacing: 0.06
+  metric_waypoint_spacing: 0.06 # 'cory_hall'数据集路径点之间的平均间距（米）
 
 seattle:
-  metric_waypoint_spacing: 0.35
+  metric_waypoint_spacing: 0.35 # 'seattle'数据集路径点之间的平均间距（米）
 
 racer:
-  metric_waypoint_spacing: 0.38
+  metric_waypoint_spacing: 0.38 # 'racer'数据集路径点之间的平均间距（米）
 
 carla_intvns:
-  metric_waypoint_spacing: 1.39
+  metric_waypoint_spacing: 1.39 # 'carla_intvns'数据集路径点之间的平均间距（米）
 
 carla_cil:
-  metric_waypoint_spacing: 1.27
-
-carla_intvns:
-  metric_waypoint_spacing: 1.39
+  metric_waypoint_spacing: 1.27 # 'carla_cil'数据集路径点之间的平均间距（米）
 
 carla:
-  metric_waypoint_spacing: 1.59
-  image_path_func: get_image_path
+  metric_waypoint_spacing: 1.59 # 'carla'数据集路径点之间的平均间距（米）
+  image_path_func: get_image_path # 获取图像路径的函数
 
 sacson:
-  metric_waypoint_spacing: 0.255
+  metric_waypoint_spacing: 0.255 # 'sacson'数据集路径点之间的平均间距（米）
 
-# add your own dataset params here:
+# 在此处添加您自己的数据集参数：

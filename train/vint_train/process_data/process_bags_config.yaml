@@ -1,29 +1,29 @@
-tartan_drive:
-  odomtopics: "/odometry/filtered_odom"
-  imtopics: "/multisense/left/image_rect_color" 
-  ang_offset: 1.5707963267948966 # pi/2
-  img_process_func: "process_tartan_img"
-  odom_process_func: "nav_to_xy_yaw"
+tartan_drive:  # tartan_drive配置部分
+  odomtopics: "/odometry/filtered_odom"  # 里程计话题，表示经过滤的里程计数据
+  imtopics: "/multisense/left/image_rect_color"  # 图像话题，表示左侧相机的校正彩色图像
+  ang_offset: 1.5707963267948966 # pi/2  # 角度偏移量，用于调整方向
+  img_process_func: "process_tartan_img"  # 图像处理函数名称
+  odom_process_func: "nav_to_xy_yaw"  # 里程计处理函数名称
 
-scand:
-  odomtopics: ["/odom", "/jackal_velocity_controller/odom"]
-  imtopics: ["/image_raw/compressed", "/camera/rgb/image_raw/compressed"]
-  ang_offset: 0.0
-  img_process_func: "process_scand_img"
-  odom_process_func: "nav_to_xy_yaw"
+scand:  # scand配置部分
+  odomtopics: ["/odom", "/jackal_velocity_controller/odom"]  # 里程计话题列表，包含多个来源的里程计数据
+  imtopics: ["/image_raw/compressed", "/camera/rgb/image_raw/compressed"]  # 图像话题列表，包含原始压缩图像
+  ang_offset: 0.0  # 角度偏移量，设置为0表示不需要调整方向
+  img_process_func: "process_scand_img"  # 图像处理函数名称
+  odom_process_func: "nav_to_xy_yaw"  # 里程计处理函数名称
 
-locobot:
-  odomtopics: "/odom"
-  imtopics: "/usb_cam/image_raw"
-  ang_offset: 0.0
-  img_process_func: "process_locobot_img"
-  odom_process_func: "nav_to_xy_yaw"
+locobot:  # locobot配置部分
+  odomtopics: "/odom"  # 里程计话题，表示标准的里程计数据
+  imtopics: "/usb_cam/image_raw"  # 图像话题，表示USB摄像头捕获的原始图像
+  ang_offset: 0.0  # 角度偏移量，设置为0表示不需要调整方向
+  img_process_func: "process_locobot_img"  # 图像处理函数名称
+  odom_process_func: "nav_to_xy_yaw"  # 里程计处理函数名称
 
-sacson:
-  odomtopics: "/odometry"
-  imtopics: "/fisheye_image/compressed"
-  ang_offset: 0.0
-  img_process_func: "process_sacson_img"
-  odom_process_func: "nav_to_xy_yaw"
+sacson:  # sacson配置部分
+  odomtopics: "/odometry"  # 里程计话题，表示常规的里程计数据
+  imtopics: "/fisheye_image/compressed"  # 图像话题，表示鱼眼镜头捕获的压缩图像
+  ang_offset: 0.0  # 角度偏移量，设置为0表示不需要调整方向
+  img_process_func: "process_sacson_img"  # 图像处理函数名称
+  odom_process_func: "nav_to_xy_yaw"  # 里程计处理函数名称
 
-# add your own datasets below:
+# 在下面添加你自己的数据集：

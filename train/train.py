@@ -37,9 +37,11 @@ from vint_train.training.train_eval_loop import (
 
 
 def main(config):
+    # 确保最小和最大距离类别的配置是合理的
     assert config["distance"]["min_dist_cat"] < config["distance"]["max_dist_cat"]
     assert config["action"]["min_dist_cat"] < config["action"]["max_dist_cat"]
 
+    # 检查是否可以使用CUDA，并设置相应的环境变量
     if torch.cuda.is_available():
         os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
         if "gpu_ids" not in config:
@@ -53,32 +55,36 @@ def main(config):
     else:
         print("Using cpu")
 
-    first_gpu_id = config["gpu_ids"][0]
+    first_gpu_id = config["gpu_ids"][0]  # 获取第一个GPU ID
     device = torch.device(
         f"cuda:{first_gpu_id}" if torch.cuda.is_available() else "cpu"
     )
 
+    # 设置随机种子以确保可重复性，随机数种子是一个整数，用于初始化随机数生成器
     if "seed" in config:
         np.random.seed(config["seed"])
         torch.manual_seed(config["seed"])
         cudnn.deterministic = True
 
-    cudnn.benchmark = True  # good if input sizes don't vary
+    cudnn.benchmark = True  # 如果输入大小不变则有利于性能提升
     transform = ([
         transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
-    ])
-    transform = transforms.Compose(transform)
+    ])#图像预处理，将图像转换为张量并标准化
+    transform = transforms.Compose(transform)#将多个transform组合起来
 
-    # Load the data
+    # 加载数据集
     train_dataset = []
     test_dataloaders = {}
 
+    # 默认上下文类型为“temporal”
     if "context_type" not in config:
         config["context_type"] = "temporal"
 
+    # 默认不裁剪目标
     if "clip_goals" not in config:
         config["clip_goals"] = False
 
+    # 遍历所有数据集并加载，会重vint.yaml中读取
     for dataset_name in config["datasets"]:
         data_config = config["datasets"][dataset_name]
         if "negative_mining" not in data_config:
@@ -92,37 +98,38 @@ def main(config):
 
         for data_split_type in ["train", "test"]:
             if data_split_type in data_config:
-                    dataset = ViNT_Dataset(
-                        data_folder=data_config["data_folder"],
-                        data_split_folder=data_config[data_split_type],
-                        dataset_name=dataset_name,
-                        image_size=config["image_size"],
-                        waypoint_spacing=data_config["waypoint_spacing"],
-                        min_dist_cat=config["distance"]["min_dist_cat"],
-                        max_dist_cat=config["distance"]["max_dist_cat"],
-                        min_action_distance=config["action"]["min_dist_cat"],
-                        max_action_distance=config["action"]["max_dist_cat"],
-                        negative_mining=data_config["negative_mining"],
-                        len_traj_pred=config["len_traj_pred"],
-                        learn_angle=config["learn_angle"],
-                        context_size=config["context_size"],
-                        context_type=config["context_type"],
-                        end_slack=data_config["end_slack"],
-                        goals_per_obs=data_config["goals_per_obs"],
-                        normalize=config["normalize"],
-                        goal_type=config["goal_type"],
-                    )
-                    if data_split_type == "train":
-                        train_dataset.append(dataset)
-                    else:
-                        dataset_type = f"{dataset_name}_{data_split_type}"
-                        if dataset_type not in test_dataloaders:
-                            test_dataloaders[dataset_type] = {}
-                        test_dataloaders[dataset_type] = dataset
+                dataset = ViNT_Dataset(
+                    data_folder=data_config["data_folder"],
+                    data_split_folder=data_config[data_split_type],
+                    dataset_name=dataset_name,
+                    image_size=config["image_size"],
+                    waypoint_spacing=data_config["waypoint_spacing"],
+                    min_dist_cat=config["distance"]["min_dist_cat"],
+                    max_dist_cat=config["distance"]["max_dist_cat"],
+                    min_action_distance=config["action"]["min_dist_cat"],
+                    max_action_distance=config["action"]["max_dist_cat"],
+                    negative_mining=data_config["negative_mining"],
+                    len_traj_pred=config["len_traj_pred"],
+                    learn_angle=config["learn_angle"],
+                    context_size=config["context_size"],
+                    context_type=config["context_type"],
+                    end_slack=data_config["end_slack"],
+                    goals_per_obs=data_config["goals_per_obs"],
+                    normalize=config["normalize"],
+                    goal_type=config["goal_type"],
+                )
+                if data_split_type == "train":#如果是训练集
+                    train_dataset.append(dataset)#将数据集添加到训练数据集中
+                else:#如果是测试集
+                    dataset_type = f"{dataset_name}_{data_split_type}"#数据集类型
+                    if dataset_type not in test_dataloaders:#如果数据集类型不在测试数据加载器中
+                        test_dataloaders[dataset_type] = {}
+                    test_dataloaders[dataset_type] = dataset#将数据集添加到测试数据加载器中
 
-    # combine all the datasets from different robots
+    # 合并来自不同机器人的所有训练数据集
     train_dataset = ConcatDataset(train_dataset)
 
+    # 创建训练数据加载器
     train_loader = DataLoader(
         train_dataset,
         batch_size=config["batch_size"],
@@ -132,9 +139,11 @@ def main(config):
         persistent_workers=True,
     )
 
+    # 设置评估批次大小
     if "eval_batch_size" not in config:
         config["eval_batch_size"] = config["batch_size"]
 
+    # 为每个测试数据集创建数据加载器
     for dataset_type, dataset in test_dataloaders.items():
         test_dataloaders[dataset_type] = DataLoader(
             dataset,
@@ -144,7 +153,7 @@ def main(config):
             drop_last=False,
         )
 
-    # Create the model
+    # 根据模型类型创建模型实例
     if config["model_type"] == "gnm":
         model = GNM(
             config["context_size"],
@@ -166,6 +175,7 @@ def main(config):
             mha_ff_dim_factor=config["mha_ff_dim_factor"],
         )
     elif config["model_type"] == "nomad":
+        # 根据视觉编码器类型选择合适的编码器
         if config["vision_encoder"] == "nomad_vint":
             vision_encoder = NoMaD_ViNT(
                 obs_encoding_size=config["encoding_size"],
@@ -202,24 +212,25 @@ def main(config):
                 global_cond_dim=config["encoding_size"],
                 down_dims=config["down_dims"],
                 cond_predict_scale=config["cond_predict_scale"],
-            )
-        dist_pred_network = DenseNetwork(embedding_dim=config["encoding_size"])
+            )#噪声预测网络，使用条件Unet1D来预测噪声
+        dist_pred_network = DenseNetwork(embedding_dim=config["encoding_size"])#密集网络，用于预测距离
         
         model = NoMaD(
             vision_encoder=vision_encoder,
             noise_pred_net=noise_pred_net,
             dist_pred_net=dist_pred_network,
-        )
+        )#创建NoMaD模型，需要视觉编码器、噪声预测网络和距离预测网络
 
         noise_scheduler = DDPMScheduler(
             num_train_timesteps=config["num_diffusion_iters"],
             beta_schedule='squaredcos_cap_v2',
             clip_sample=True,
             prediction_type='epsilon'
-        )
+        )#噪声调度器，用于调度噪声
     else:
         raise ValueError(f"Model {config['model']} not supported")
 
+    # 如果启用梯度裁剪，则注册钩子
     if config["clipping"]:
         print("Clipping gradients to", config["max_norm"])
         for p in model.parameters():
@@ -231,8 +242,9 @@ def main(config):
                 )
             )
 
-    lr = float(config["lr"])
+    lr = float(config["lr"])  # 学习率
     config["optimizer"] = config["optimizer"].lower()
+    # 根据配置选择优化器
     if config["optimizer"] == "adam":
         optimizer = Adam(model.parameters(), lr=lr, betas=(0.9, 0.98))
     elif config["optimizer"] == "adamw":
@@ -243,6 +255,7 @@ def main(config):
         raise ValueError(f"Optimizer {config['optimizer']} not supported")
 
     scheduler = None
+    # 根据配置选择学习率调度器
     if config["scheduler"] is not None:
         config["scheduler"] = config["scheduler"].lower()
         if config["scheduler"] == "cosine":
@@ -270,6 +283,7 @@ def main(config):
         else:
             raise ValueError(f"Scheduler {config['scheduler']} not supported")
 
+        # 如果需要，添加预热调度器
         if config["warmup"]:
             print("Using warmup scheduler")
             scheduler = GradualWarmupScheduler(
@@ -280,6 +294,7 @@ def main(config):
             )
 
     current_epoch = 0
+    # 如果需要从检查点加载模型
     if "load_run" in config:
         load_project_folder = os.path.join("logs", config["load_run"])
         print("Loading model from ", load_project_folder)
@@ -289,17 +304,19 @@ def main(config):
         if "epoch" in latest_checkpoint:
             current_epoch = latest_checkpoint["epoch"] + 1
 
-    # Multi-GPU
+    # 多GPU支持
     if len(config["gpu_ids"]) > 1:
         model = nn.DataParallel(model, device_ids=config["gpu_ids"])
     model = model.to(device)
 
-    if "load_run" in config:  # load optimizer and scheduler after data parallel
+    # 在数据并行后加载优化器和调度器状态
+    if "load_run" in config:  
         if "optimizer" in latest_checkpoint:
             optimizer.load_state_dict(latest_checkpoint["optimizer"].state_dict())
         if scheduler is not None and "scheduler" in latest_checkpoint:
             scheduler.load_state_dict(latest_checkpoint["scheduler"].state_dict())
 
+    # 开始训练或评估循环
     if config["model_type"] == "vint" or config["model_type"] == "gnm": 
         train_eval_loop(
             train_model=config["train"],
@@ -351,11 +368,11 @@ def main(config):
 
 
 if __name__ == "__main__":
-    torch.multiprocessing.set_start_method("spawn")
+    torch.multiprocessing.set_start_method("spawn")  # 设置多进程启动方法
 
     parser = argparse.ArgumentParser(description="Visual Navigation Transformer")
 
-    # project setup
+    # 项目设置
     parser.add_argument(
         "--config",
         "-c",
@@ -365,26 +382,28 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
-    with open("config/defaults.yaml", "r") as f:
+    with open("config/defaults.yaml", "r") as f:#将默认配置加载到内存中
         default_config = yaml.safe_load(f)
 
     config = default_config
 
-    with open(args.config, "r") as f:
+    with open(args.config, "r") as f:#将用户配置加载到内存中
         user_config = yaml.safe_load(f)
 
     config.update(user_config)
 
+    # 更新运行名称以包含当前时间戳
     config["run_name"] += "_" + time.strftime("%Y_%m_%d_%H_%M_%S")
     config["project_folder"] = os.path.join(
         "logs", config["project_name"], config["run_name"]
-    )
+    )#创建项目文件夹，用于保存日志和模型
     os.makedirs(
         config[
             "project_folder"
-        ],  # should error if dir already exists to avoid overwriting and old project
+        ],  # 如果目录已存在则会报错，以避免覆盖旧项目
     )
 
+    # 如果使用wandb进行实验跟踪
     if config["use_wandb"]:
         wandb.login()
         wandb.init(
@@ -392,11 +411,11 @@ if __name__ == "__main__":
             settings=wandb.Settings(start_method="fork"),
             entity="gnmv2", # TODO: change this to your wandb entity
         )
-        wandb.save(args.config, policy="now")  # save the config file
+        wandb.save(args.config, policy="now")  # 保存配置文件
         wandb.run.name = config["run_name"]
-        # update the wandb args with the training configurations
+        # 将训练配置更新到wandb参数中
         if wandb.run:
             wandb.config.update(config)
 
-    print(config)
-    main(config)
+    print(config)  # 打印最终配置
+    main(config)  # 调用主函数开始训练

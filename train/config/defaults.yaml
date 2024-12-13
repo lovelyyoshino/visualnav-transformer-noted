@@ -1,66 +1,65 @@
-# defaults for training
-project_name: vint
-run_name: vint
+# 训练的默认设置
+project_name: vint # 项目名称
+run_name: vint     # 运行名称
 
-# training setup
-use_wandb: True # set to false if you don't want to log to wandb
-train: True
-batch_size: 400
-eval_batch_size: 400
-epochs: 30
-gpu_ids: [0] 
-num_workers: 4
-lr: 5e-4
-optimizer: adam
-seed: 0
-clipping: False
-train_subset: 1.
+# 训练配置
+use_wandb: True # 设置为 False 如果不想记录到 wandb
+train: True # 是否进行训练
+batch_size: 400 # 每个批次的样本数量
+eval_batch_size: 400 # 评估时每个批次的样本数量
+epochs: 30 # 训练的总轮数
+gpu_ids: [0] # 使用的 GPU ID 列表
+num_workers: 4 # 数据加载时使用的工作线程数量
+lr: 5e-4 # 学习率
+optimizer: adam # 优化器类型
+seed: 0 # 随机种子
+clipping: False # 是否启用梯度裁剪
+train_subset: 1. # 用于训练的数据子集比例
 
-# model params
-model_type: gnm
-obs_encoding_size: 1024
-goal_encoding_size: 1024
+# 模型参数
+model_type: gnm # 模型类型
+obs_encoding_size: 1024 # 观察编码的大小
+goal_encoding_size: 1024 # 目标编码的大小
 
-# normalization for the action space
-normalize: True
+# 动作空间的归一化
+normalize: True # 是否对动作空间进行归一化
 
-# context
-context_type: temporal
-context_size: 5
+# 上下文信息
+context_type: temporal # 上下文类型，时间序列
+context_size: 5 # 上下文的大小
 
-# tradeoff between action and distance prediction loss
-alpha: 0.5
+# 动作和距离预测损失之间的权衡
+alpha: 0.5 # 权重系数，用于平衡动作和距离预测损失
 
-# tradeoff between task loss and kld
-beta: 0.1
+# 任务损失与 KLD（Kullback-Leibler Divergence）之间的权衡
+beta: 0.1 # 权重系数，用于平衡任务损失和 KLD
 
-obs_type: image
-goal_type: image
-scheduler: null
+obs_type: image # 观察类型，这里是图像
+goal_type: image # 目标类型，这里是图像
+scheduler: null # 学习率调度器，当前未使用
 
-# distance bounds for distance and action and distance predictions 
+# 距离界限用于距离和动作及距离预测
 distance:
-  min_dist_cat: 0
-  max_dist_cat: 20
+  min_dist_cat: 0 # 最小距离类别
+  max_dist_cat: 20 # 最大距离类别
 action:
-  min_dist_cat: 2
-  max_dist_cat: 10
-close_far_threshold: 10 # distance threshold used to seperate the close and the far  subgoals that are sampled per datapoint
+  min_dist_cat: 2 # 动作最小距离类别
+  max_dist_cat: 10 # 动作最大距离类别
+close_far_threshold: 10 # 用于分隔近目标和远目标的距离阈值，每个数据点采样的子目标
 
-# action output params
-len_traj_pred: 5
-learn_angle: True
+# 动作输出参数
+len_traj_pred: 5 # 轨迹预测的长度
+learn_angle: True # 是否学习角度
 
-# dataset specific parameters
-image_size: [85, 64] # width, height
+# 数据集特定参数
+image_size: [85, 64] # 图像的宽度和高度
 
-# logging stuff
-## =0 turns off
-print_log_freq: 100 # in iterations
-image_log_freq: 1000 # in iterations
-num_images_log: 8 # number of images to log in a logging iteration
-pairwise_test_freq: 10 # in epochs
-eval_fraction: 0.25 # fraction of the dataset to use for evaluation
-wandb_log_freq: 10 # in iterations
-eval_freq: 1 # in epochs
-
+# 日志记录相关设置
+## =0 表示关闭日志记录
+print_log_freq: 100 # 打印日志的频率，以迭代次数为单位
+image_log_freq: 1000 # 图像日志记录的频率，以迭代次数为单位
+num_images_log: 8 # 在一次日志记录中要记录的图像数量
+pairwise_test_freq: 10 # 每多少个 epoch 进行一次成对测试
+eval_fraction: 0.25 # 用于评估的数据集比例
+wandb_log_freq: 10 # wandb 日志记录的频率，以迭代次数为单位
+eval_freq: 1 # 每多少个 epoch 进行一次评估

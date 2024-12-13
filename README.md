@@ -1,74 +1,74 @@
-# General Navigation Models: GNM, ViNT and NoMaD
+# 通用导航模型：GNM、ViNT 和 NoMaD
 
-**Contributors**: Dhruv Shah, Ajay Sridhar, Nitish Dashora, Catherine Glossop, Kyle Stachowicz, Arjun Bhorkar, Kevin Black, Noriaki Hirose, Sergey Levine
+**贡献者**：Dhruv Shah, Ajay Sridhar, Nitish Dashora, Catherine Glossop, Kyle Stachowicz, Arjun Bhorkar, Kevin Black, Noriaki Hirose, Sergey Levine
 
-_Berkeley AI Research_
+_加州大学伯克利分校人工智能研究所_
 
-[Project Page](https://general-navigation-models.github.io) | [Citing](https://github.com/robodhruv/visualnav-transformer#citing) | [Pre-Trained Models](https://drive.google.com/drive/folders/1a9yWR2iooXFAqjQHetz263--4_2FFggg?usp=sharing)
+[项目页面](https://general-navigation-models.github.io) | [引用](https://github.com/robodhruv/visualnav-transformer#citing) | [预训练模型](https://drive.google.com/drive/folders/1a9yWR2iooXFAqjQHetz263--4_2FFggg?usp=sharing)
 
 ---
 
-General Navigation Models are general-purpose goal-conditioned visual navigation policies trained on diverse, cross-embodiment training data, and can control many different robots in zero-shot. They can also be efficiently fine-tuned, or adapted, to new robots and downstream tasks. Our family of models is described in the following research papers (and growing):
-1. [GNM: A General Navigation Model to Drive Any Robot](https://sites.google.com/view/drive-any-robot) (_October 2022_, presented at ICRA 2023)
-2. [ViNT: A Foundation Model for Visual Navigation](https://general-navigation-models.github.io/vint/index.html) (_June 2023_, presented at CoRL 2023)
-3. [NoMaD: Goal Masking Diffusion Policies for Navigation and Exploration](https://general-navigation-models.github.io/nomad/index.html) (_October 2023_)
+通用导航模型是基于多样化、跨实体训练数据训练的通用目标条件视觉导航策略，能够在零样本情况下控制多种不同的机器人。它们还可以高效地微调或适应新的机器人和下游任务。我们的模型家族在以下研究论文中进行了描述（并在不断增加）：
+1. [GNM：驱动任何机器人的通用导航模型](https://sites.google.com/view/drive-any-robot)（_2022年10月_，在ICRA 2023上展示）
+2. [ViNT：视觉导航的基础模型](https://general-navigation-models.github.io/vint/index.html)（_2023年6月_，在CoRL 2023上展示）
+3. [NoMaD：用于导航和探索的目标掩蔽扩散策略](https://general-navigation-models.github.io/nomad/index.html)（_2023年10月_）
 
-## Overview
-This repository contains code for training our family of models with your own data, pre-trained model checkpoints, as well as example code to deploy it on a TurtleBot2/LoCoBot robot. The repository follows the organization from [GNM](https://github.com/PrieureDeSion/drive-any-robot).
+## 概述
+该代码库包含用于使用您自己的数据训练我们模型家族的代码、预训练模型检查点，以及在TurtleBot2/LoCoBot机器人上部署的示例代码。该代码库遵循[GNM](https://github.com/PrieureDeSion/drive-any-robot)的组织结构。
 
-- `./train/train.py`: training script to train or fine-tune the ViNT model on your custom data.
-- `./train/vint_train/models/`: contains model files for GNM, ViNT, and some baselines.
-- `./train/process_*.py`: scripts to process rosbags or other formats of robot trajectories into training data.
-- `./deployment/src/record_bag.sh`: script to collect a demo trajectory as a ROS bag in the target environment on the robot. This trajectory is subsampled to generate a topological graph of the environment.
-- `./deployment/src/create_topomap.sh`: script to convert a ROS bag of a demo trajectory into a topological graph that the robot can use to navigate.
-- `./deployment/src/navigate.sh`: script that deploys a trained GNM/ViNT/NoMaD model on the robot to navigate to a desired goal in the generated topological graph. Please see relevant sections below for configuration settings.
-- `./deployment/src/explore.sh`: script that deploys a trained NoMaD model on the robot to randomly explore its environment. Please see relevant sections below for configuration settings.
+- `./train/train.py`：用于在您的自定义数据上训练或微调ViNT模型的训练脚本。
+- `./train/vint_train/models/`：包含GNM、ViNT及一些基线模型的文件。
+- `./train/process_*.py`：处理rosbag或其他格式的机器人轨迹以生成训练数据的脚本。
+- `./deployment/src/record_bag.sh`：在机器人目标环境中收集演示轨迹作为ROS bag的脚本。该轨迹经过下采样以生成环境的拓扑图。
+- `./deployment/src/create_topomap.sh`：将演示轨迹的ROS bag转换为机器人可以用来导航的拓扑图的脚本。
+- `./deployment/src/navigate.sh`：在机器人上部署训练好的GNM/ViNT/NoMaD模型以在生成的拓扑图中导航到所需目标的脚本。请参见下面相关部分以获取配置设置。
+- `./deployment/src/explore.sh`：在机器人上部署训练好的NoMaD模型以随机探索其环境的脚本。请参见下面相关部分以获取配置设置。
 
-## Train
+## 训练
 
-This subfolder contains code for processing datasets and training models from your own data.
+该子文件夹包含处理数据集和从您自己的数据训练模型的代码。
 
-### Pre-requisites
+### 先决条件
 
-The codebase assumes access to a workstation running Ubuntu (tested on 18.04 and 20.04), Python 3.7+, and a GPU with CUDA 10+. It also assumes access to conda, but you can modify it to work with other virtual environment packages, or a native setup.
-### Setup
-Run the commands below inside the `vint_release/` (topmost) directory:
-1. Set up the conda environment:
+该代码库假设可以访问运行Ubuntu（在18.04和20.04上测试）、Python 3.7+和具有CUDA 10+的GPU的工作站。它还假设可以访问conda，但您可以修改它以与其他虚拟环境包或本地设置一起使用。
+
+### 设置
+在`vint_release/`（最上层）目录中运行以下命令：
+1. 设置conda环境：
     ```bash
     conda env create -f train/train_environment.yml
     ```
-2. Source the conda environment:
+2. 激活conda环境：
     ```
     conda activate vint_train
     ```
-3. Install the vint_train packages:
+3. 安装vint_train包：
     ```bash
     pip install -e train/
     ```
-4. Install the `diffusion_policy` package from this [repo](https://github.com/real-stanford/diffusion_policy):
+4. 从此[仓库](https://github.com/real-stanford/diffusion_policy)安装`diffusion_policy`包：
     ```bash
     git clone git@github.com:real-stanford/diffusion_policy.git
     pip install -e diffusion_policy/
     ```
 
-
-### Data-Wrangling
-In the [papers](https://general-navigation-models.github.io), we train on a combination of publicly available and unreleased datasets. Below is a list of publicly available datasets used for training; please contact the respective authors for access to the unreleased data.
+### 数据处理
+在[论文](https://general-navigation-models.github.io)中，我们在公开可用和未发布数据集的组合上进行训练。以下是用于训练的公开可用数据集的列表；请联系各自的作者以获取未发布数据的访问权限。
 - [RECON](https://sites.google.com/view/recon-robot/dataset)
 - [TartanDrive](https://github.com/castacks/tartan_drive)
 - [SCAND](https://www.cs.utexas.edu/~xiao/SCAND/SCAND.html#Links)
-- [GoStanford2 (Modified)](https://drive.google.com/drive/folders/1RYseCpbtHEFOsmSX2uqNY_kvSxwZLVP_?usp=sharing)
+- [GoStanford2（修改版）](https://drive.google.com/drive/folders/1RYseCpbtHEFOsmSX2uqNY_kvSxwZLVP_?usp=sharing)
 - [SACSoN/HuRoN](https://sites.google.com/view/sacson-review/huron-dataset)
 
-We recommend you to download these (and any other datasets you may want to train on) and run the processing steps below.
+我们建议您下载这些（以及您可能想要训练的任何其他数据集）并运行以下处理步骤。
 
-#### Data Processing 
+#### 数据处理 
 
-We provide some sample scripts to process these datasets, either directly from a rosbag or from a custom format like HDF5s:
-1. Run `process_bags.py` with the relevant args, or `process_recon.py` for processing RECON HDF5s. You can also manually add your own dataset by following our structure below (if you are adding a custom dataset, please checkout the [Custom Datasets](#custom-datasets) section).
-2. Run `data_split.py` on your dataset folder with the relevant args.
+我们提供了一些示例脚本来处理这些数据集，无论是直接从rosbag还是从自定义格式（如HDF5）：
+1. 使用相关参数运行`process_bags.py`，或使用`process_recon.py`处理RECON HDF5。您还可以通过遵循我们下面的结构手动添加自己的数据集（如果您添加自定义数据集，请查看[自定义数据集](#custom-datasets)部分）。
+2. 在您的数据集文件夹上运行`data_split.py`，并使用相关参数。
 
-After step 1 of data processing, the processed dataset should have the following structure:
+在数据处理的第一步之后，处理后的数据集应具有以下结构：
 
 ```
 ├── <dataset_name>
@@ -93,12 +93,11 @@ After step 1 of data processing, the processed dataset should have the following
         └── traj_data.pkl
 ```  
 
-Each `*.jpg` file contains an forward-facing RGB observation from the robot, and they are temporally labeled. The `traj_data.pkl` file is the odometry data for the trajectory. It’s a pickled dictionary with the keys:
-- `"position"`: An np.ndarray [T, 2] of the xy-coordinates of the robot at each image observation.
-- `"yaw"`: An np.ndarray [T,] of the yaws of the robot at each image observation.
+每个`*.jpg`文件包含来自机器人的前视RGB观察，并且它们是按时间标记的。`traj_data.pkl`文件是轨迹的里程计数据。它是一个带有以下键的pickle字典：
+- `"position"`：一个np.ndarray [T, 2]，表示每个图像观察时机器人的xy坐标。
+- `"yaw"`：一个np.ndarray [T,]，表示每个图像观察时机器人的偏航角。
 
-
-After step 2 of data processing, the processed data-split should the following structure inside `vint_release/train/vint_train/data/data_splits/`:
+在数据处理的第二步之后，处理后的数据拆分应在`vint_release/train/vint_train/data/data_splits/`中具有以下结构：
 
 ```
 ├── <dataset_name>
@@ -108,212 +107,173 @@ After step 2 of data processing, the processed data-split should the following s
         └── traj_names.txt 
 ``` 
 
-### Training your General Navigation Models
-Run this inside the `vint_release/train` directory:
+### 训练您的通用导航模型
+在`vint_release/train`目录中运行：
 ```bash
 python train.py -c <path_of_train_config_file>
 ```
-The premade config yaml files are in the `train/config` directory. 
+预制的配置yaml文件位于`train/config`目录中。 
 
-#### Custom Config Files
-You can use one of the premade yaml files as a starting point and change the values as you need. `config/vint.yaml` is good choice since it has commented arguments. `config/defaults.yaml` contains the default config values (don't directly train with this config file since it does not specify any datasets for training).
+#### 自定义配置文件
+您可以使用其中一个预制的yaml文件作为起点，并根据需要更改值。`config/vint.yaml`是一个不错的选择，因为它包含注释参数。`config/defaults.yaml`包含默认配置值（请勿直接使用此配置文件进行训练，因为它未指定任何用于训练的数据集）。
 
-#### Custom Datasets
-Make sure your dataset and data-split directory follows the structures provided in the [Data Processing](#data-processing) section. Locate `train/vint_train/data/data_config.yaml` and append the following:
+#### 自定义数据集
+确保您的数据集和数据拆分目录遵循[数据处理](#data-processing)部分中提供的结构。找到`train/vint_train/data/data_config.yaml`并附加以下内容：
 
 ```
 <dataset_name>:
     metric_waypoints_distance: <average_distance_in_meters_between_waypoints_in_the_dataset>
 ```
 
-Locate your training config file and add the following text under the `datasets` argument (feel free to change the values of `end_slack`, `goals_per_obs`, and `negative_mining`):
+找到您的训练配置文件，并在`datasets`参数下添加以下文本（可以自由更改`end_slack`、`goals_per_obs`和`negative_mining`的值）：
 ```
 <dataset_name>:
     data_folder: <path_to_the_dataset>
     train: data/data_splits/<dataset_name>/train/ 
     test: data/data_splits/<dataset_name>/test/ 
-    end_slack: 0 # how many timesteps to cut off from the end of each trajectory  (in case many trajectories end in collisions)
-    goals_per_obs: 1 # how many goals are sampled per observation
-    negative_mining: True # negative mining from the ViNG paper (Shah et al.)
+    end_slack: 0 # 从每个轨迹的末尾切掉多少时间步（以防许多轨迹以碰撞结束）
+    goals_per_obs: 1 # 每个观察采样多少个目标
+    negative_mining: True # 来自ViNG论文的负采样（Shah等人）
 ```
 
-#### Training your model from a checkpoint
-Instead of training from scratch, you can also load an existing checkpoint from the published results.
-Add `load_run: <project_name>/<log_run_name>`to your .yaml config file in `vint_release/train/config/`. The `*.pth` of the file you are loading to be saved in this file structure and renamed to “latest”: `vint_release/train/logs/<project_name>/<log_run_name>/latest.pth`. This makes it easy to train from the checkpoint of a previous run since logs are saved this way by default. Note: if you are loading a checkpoint from a previous run, check for the name the run in the `vint_release/train/logs/<project_name>/`, since the code appends a string of the date to each run_name specified in the config yaml file of the run to avoid duplicate run names. 
+#### 从检查点训练您的模型
+您还可以从已发布结果中加载现有检查点，而不是从头开始训练。
+在`vint_release/train/config/`中的.yaml配置文件中添加`load_run: <project_name>/<log_run_name>`。您要加载的`*.pth`文件应保存在此文件结构中，并重命名为“latest”：`vint_release/train/logs/<project_name>/<log_run_name>/latest.pth`。这使得从先前运行的检查点进行训练变得简单，因为日志默认以这种方式保存。注意：如果您从先前运行加载检查点，请检查`vint_release/train/logs/<project_name>/`中的运行名称，因为代码会在配置yaml文件中为每个运行名称附加日期字符串，以避免重复的运行名称。
 
+如果您想使用我们的检查点，可以从[此链接](https://drive.google.com/drive/folders/1a9yWR2iooXFAqjQHetz263--4_2FFggg?usp=sharing)下载`*.pth`文件。
 
-If you want to use our checkpoints, you can download the `*.pth` files from [this link](https://drive.google.com/drive/folders/1a9yWR2iooXFAqjQHetz263--4_2FFggg?usp=sharing).
+## 部署
+该子文件夹包含加载预训练ViNT并在开源[LoCoBot室内机器人平台](http://www.locobot.org/)上部署的代码，使用[NVIDIA Jetson Orin Nano](https://www.amazon.com/NVIDIA-Jetson-Orin-Nano-Developer/dp/B0BZJTQ5YP/ref=asc_df_B0BZJTQ5YP/?tag=hyprod-20&linkCode=df0&hvadid=652427572954&hvpos=&hvnetw=g&hvrand=12520404772764575478&hvpone=&hvptwo=&hvqmt=&hvdev=c&hvdvcmdl=&hvlocint=&hvlocphy=1013585&hvtargid=pla-2112361227514&psc=1&gclid=CjwKCAjw4P6oBhBsEiwAKYVkq7dqJEwEPz0K-H33oN7MzjO0hnGcAJDkx2RdT43XZHdSWLWHKDrODhoCmnoQAvD_BwE)。它可以轻松适应在其他机器人上运行，研究人员已经能够独立地在以下机器人上部署它——Clearpath Jackal、DJI Tello、Unitree A1、TurtleBot2、Vizbot——以及在CARLA等模拟环境中。
 
+### LoCoBot设置
 
-## Deployment
-This subfolder contains code to load a pre-trained ViNT and deploy it on the open-source [LoCoBot indoor robot platform](http://www.locobot.org/) with a [NVIDIA Jetson Orin Nano](https://www.amazon.com/NVIDIA-Jetson-Orin-Nano-Developer/dp/B0BZJTQ5YP/ref=asc_df_B0BZJTQ5YP/?tag=hyprod-20&linkCode=df0&hvadid=652427572954&hvpos=&hvnetw=g&hvrand=12520404772764575478&hvpone=&hvptwo=&hvqmt=&hvdev=c&hvdvcmdl=&hvlocint=&hvlocphy=1013585&hvtargid=pla-2112361227514&psc=1&gclid=CjwKCAjw4P6oBhBsEiwAKYVkq7dqJEwEPz0K-H33oN7MzjO0hnGcAJDkx2RdT43XZHdSWLWHKDrODhoCmnoQAvD_BwE). It can be easily adapted to be run on alternate robots, and researchers have been able to independently deploy it on the following robots – Clearpath Jackal, DJI Tello, Unitree A1, TurtleBot2, Vizbot – and in simulated environments like CARLA.
+该软件在运行Ubuntu 20.04的LoCoBot上进行了测试。
 
-### LoCoBot Setup
-
-This software was tested on a LoCoBot running Ubuntu 20.04.
-
-
-#### Software Installation (in this order)
+#### 软件安装（按此顺序）
 1. ROS: [ros-noetic](https://wiki.ros.org/noetic/Installation/Ubuntu)
-2. ROS packages: 
+2. ROS包： 
     ```bash
     sudo apt-get install ros-noetic-usb-cam ros-noetic-joy
     ```
 3. [kobuki](http://wiki.ros.org/kobuki/Tutorials/Installation)
 4. Conda 
-    - Install anaconda/miniconda/etc. for managing environments
-    - Make conda env with environment.yml (run this inside the `vint_release/` directory)
+    - 安装anaconda/miniconda等以管理环境
+    - 使用environment.yml创建conda环境（在`vint_release/`目录中运行）
         ```bash
         conda env create -f deployment/deployment_environment.yaml
         ```
-    - Source env 
+    - 激活环境 
         ```bash
         conda activate vint_deployment
         ```
-    - (Recommended) add to `~/.bashrc`: 
+    - （推荐）添加到`~/.bashrc`： 
         ```bash
         echo “conda activate vint_deployment” >> ~/.bashrc 
         ```
-5. Install the `vint_train` packages (run this inside the `vint_release/` directory):
+5. 安装`vint_train`包（在`vint_release/`目录中运行）。命令用于在开发模式下安装 Python 包，其中 -e 代表“editable”：
     ```bash
     pip install -e train/
     ```
-6. Install the `diffusion_policy` package from this [repo](https://github.com/real-stanford/diffusion_policy):
+6. 从此[仓库](https://github.com/real-stanford/diffusion_policy)安装`diffusion_policy`包：
     ```bash
     git clone git@github.com:real-stanford/diffusion_policy.git
     pip install -e diffusion_policy/
     ```
-7. (Recommended) Install [tmux](https://github.com/tmux/tmux/wiki/Installing) if not present.
-    Many of the bash scripts rely on tmux to launch multiple screens with different commands. This will be useful for debugging because you can see the output of each screen.
+7. （推荐）如果未安装，请安装[tmux](https://github.com/tmux/tmux/wiki/Installing)。
+    许多bash脚本依赖于tmux来启动多个屏幕以执行不同的命令。这对于调试非常有用，因为您可以看到每个屏幕的输出。
 
-#### Hardware Requirements
-- LoCoBot: http://locobot.org (just the navigation stack)
-- A wide-angle RGB camera: [Example](https://www.amazon.com/ELP-170degree-Fisheye-640x480-Resolution/dp/B00VTHD17W). The `vint_locobot.launch` file uses camera parameters that work with cameras like the ELP fisheye wide angle, feel free to modify to your own. Adjust the camera parameters in `vint_release/deployment/config/camera.yaml` your camera accordingly (used for visualization).
-- [Joystick](https://www.amazon.com/Logitech-Wireless-Nano-Receiver-Controller-Vibration/dp/B0041RR0TW)/[keyboard teleop](http://wiki.ros.org/teleop_twist_keyboard) that works with Linux. Add the index mapping for the _deadman_switch_ on the joystick to the `vint_release/deployment/config/joystick.yaml`. You can find the mapping from buttons to indices for common joysticks in the [wiki](https://wiki.ros.org/joy). 
+#### 硬件要求
+- LoCoBot: http://locobot.org（仅导航堆栈）
+- 广角RGB相机：[示例](https://www.amazon.com/ELP-170degree-Fisheye-640x480-Resolution/dp/B00VTHD17W)。`vint_locobot.launch`文件使用与ELP鱼眼广角相机兼容的相机参数，您可以根据自己的需要进行修改。根据需要在`vint_release/deployment/config/camera.yaml`中调整相机参数（用于可视化）。
+- [操纵杆](https://www.amazon.com/Logitech-Wireless-Nano-Receiver-Controller-Vibration/dp/B0041RR0TW)/[键盘遥控](http://wiki.ros.org/teleop_twist_keyboard)，可与Linux配合使用。将操纵杆的_死区开关_的索引映射添加到`vint_release/deployment/config/joystick.yaml`。您可以在[wiki](https://wiki.ros.org/joy)中找到常见操纵杆的按钮到索引的映射。
 
+### 加载模型权重
 
-### Loading the model weights
+将模型权重`*.pth`文件保存在`vint_release/deployment/model_weights`文件夹中。我们的模型权重在[此链接](https://drive.google.com/drive/folders/1a9yWR2iooXFAqjQHetz263--4_2FFggg?usp=sharing)中。
 
-Save the model weights *.pth file in `vint_release/deployment/model_weights` folder. Our model's weights are in [this link](https://drive.google.com/drive/folders/1a9yWR2iooXFAqjQHetz263--4_2FFggg?usp=sharing).
+### 收集拓扑图
 
-### Collecting a Topological Map
+_确保在`vint_release/deployment/src/`目录中运行这些脚本。_
 
-_Make sure to run these scripts inside the `vint_release/deployment/src/` directory._
+本节讨论了一种简单的方法来为部署创建目标环境的拓扑图。为简单起见，我们将使用机器人在“路径跟随”模式下，即给定环境中的单个轨迹，任务是沿着相同的轨迹到达目标。环境可能有新的/动态障碍物、光照变化等。
 
-
-This section discusses a simple way to create a topological map of the target environment for deployment. For simplicity, we will use the robot in “path-following” mode, i.e. given a single trajectory in an environment, the task is to follow the same trajectory to the goal. The environment may have new/dynamic obstacles, lighting variations etc.
-
-#### Record the rosbag: 
+#### 记录rosbag： 
 ```bash
 ./record_bag.sh <bag_name>
 ```
 
-Run this command to teleoperate the robot with the joystick and camera. This command opens up three windows 
-1. `roslaunch vint_locobot.launch`: This launch file opens the `usb_cam` node for the camera, the joy node for the joystick, and nodes for the robot’s mobile base.
-2. `python joy_teleop.py`: This python script starts a node that reads inputs from the joy topic and outputs them on topics that teleoperate the robot’s base.
-3. `rosbag record /usb_cam/image_raw -o <bag_name>`: This command isn’t run immediately (you have to click Enter). It will be run in the vint_release/deployment/topomaps/bags directory, where we recommend you store your rosbags.
+运行此命令以使用操纵杆和相机遥控机器人。此命令将打开三个窗口：
+1. `roslaunch vint_locobot.launch`：此启动文件打开相机的`usb_cam`节点、操纵杆的joy节点和机器人的移动底盘节点。
+2. `python joy_teleop.py`：此python脚本启动一个节点，读取joy主题的输入并将其输出到遥控机器人的底盘的主题上。
+3. `rosbag record /usb_cam/image_raw -o <bag_name>`：此命令不会立即运行（您必须按Enter）。它将在vint_release/deployment/topomaps/bags目录中运行，我们建议您在此处存储rosbags。
 
-Once you are ready to record the bag, run the `rosbag record` script and teleoperate the robot on the map you want the robot to follow. When you are finished with recording the path, kill the `rosbag record` command, and then kill the tmux session.
+一旦准备好记录bag，运行`rosbag record`脚本并遥控机器人沿着您希望机器人跟随的地图。当您完成路径记录时，终止`rosbag record`命令，然后终止tmux会话。
 
-#### Make the topological map: 
+#### 制作拓扑图： 
 ```bash
 ./create_topomap.sh <topomap_name> <bag_filename>
 ```
 
-This command opens up 3 windows:
+此命令将打开3个窗口：
 1. `roscore`
-2. `python create_topomap.py —dt 1 —dir <topomap_dir>`: This command creates a directory in `/vint_release/deployment/topomaps/images` and saves an image as a node in the map every second the bag is played.
-3. `rosbag play -r 1.5 <bag_filename>`: This command plays the rosbag at x5 speed, so the python script is actually recording nodes 1.5 seconds apart. The `<bag_filename>` should be the entire bag name with the .bag extension. You can change this value in the `make_topomap.sh` file. The command does not run until you hit Enter, which you should only do once the python script gives its waiting message. Once you play the bag, move to the screen where the python script is running so you can kill it when the rosbag stops playing.
+2. `python create_topomap.py —dt 1 —dir <topomap_dir>`：此命令在`/vint_release/deployment/topomaps/images`中创建一个目录，并在每秒播放bag时将图像保存为地图中的节点。
+3. `rosbag play -r 1.5 <bag_filename>`：此命令以5倍速度播放rosbag，因此python脚本实际上每1.5秒记录一个节点。`<bag_filename>`应为完整的bag名称，带有.bag扩展名。您可以在`make_topomap.sh`文件中更改此值。该命令在您按Enter之前不会运行，您应仅在python脚本给出等待消息后按Enter。一旦播放bag，请转到运行python脚本的屏幕，以便在rosbag停止播放时终止它。
 
-When the bag stops playing, kill the tmux session.
+当bag停止播放时，终止tmux会话。
 
-
-### Running the model 
-#### Navigation
-_Make sure to run this script inside the `vint_release/deployment/src/` directory._
+### 运行模型 
+#### 导航
+_确保在`vint_release/deployment/src/`目录中运行此脚本。_
 
 ```bash
 ./navigate.sh “--model <model_name> --dir <topomap_dir>”
 ```
 
-To deploy one of the models from the published results, we are releasing model checkpoints that you can download from [this link](https://drive.google.com/drive/folders/1a9yWR2iooXFAqjQHetz263--4_2FFggg?usp=sharing).
+要部署已发布结果中的模型之一，我们发布了可以从[此链接](https://drive.google.com/drive/folders/1a9yWR2iooXFAqjQHetz263--4_2FFggg?usp=sharing)下载的模型检查点。
 
+`<model_name>`是`vint_release/deployment/config/models.yaml`文件中模型的名称。在此文件中，您为每个模型指定这些参数（使用默认值）：
+- `config_path`（str）：用于训练模型的`vint_release/train/config/`中的*.yaml文件的路径
+- `ckpt_path`（str）：`vint_release/deployment/model_weights/`中*.pth文件的路径
 
-The `<model_name>` is the name of the model in the `vint_release/deployment/config/models.yaml` file. In this file, you specify these parameters of the model for each model (defaults used):
-- `config_path` (str): path of the *.yaml file in `vint_release/train/config/` used to train the model
-- `ckpt_path` (str): path of the *.pth file in `vint_release/deployment/model_weights/`
+确保这些配置与您用于训练模型的配置匹配。我们提供权重的模型的配置在yaml文件中供您参考。
 
+`<topomap_dir>`是`vint_release/deployment/topomaps/images`中包含与拓扑图节点对应的图像的目录名称。图像按名称从0到N排序。
 
-Make sure these configurations match what you used to train the model. The configurations for the models we provided the weights for are provided in yaml file for your reference.
+此命令将打开4个窗口：
 
-The `<topomap_dir>` is the name of the directory in `vint_release/deployment/topomaps/images` that has the images corresponding to the nodes in the topological map. The images are ordered by name from 0 to N.
+1. `roslaunch vint_locobot.launch`：此启动文件打开相机的usb_cam节点、操纵杆的joy节点和机器人的移动底盘的多个节点。
+2. `python navigate.py --model <model_name> -—dir <topomap_dir>`：此python脚本启动一个节点，从`/usb_cam/image_raw`主题读取图像观察，将观察和地图输入模型，并将动作发布到`/waypoint`主题。
+3. `python joy_teleop.py`：此python脚本启动一个节点，读取joy主题的输入并将其输出到遥控机器人的底盘的主题上。
+4. `python pd_controller.py`：此python脚本启动一个节点，从`/waypoint`主题（来自模型的航点）读取消息并输出速度以导航机器人的底盘。
 
-This command opens up 4 windows:
+当机器人完成导航时，终止`pd_controller.py`脚本，然后终止tmux会话。如果您希望在机器人导航时控制它，`joy_teleop.py`脚本允许您使用操纵杆进行控制。
 
-1. `roslaunch vint_locobot.launch`: This launch file opens the usb_cam node for the camera, the joy node for the joystick, and several nodes for the robot’s mobile base).
-2. `python navigate.py --model <model_name> -—dir <topomap_dir>`: This python script starts a node that reads in image observations from the `/usb_cam/image_raw` topic, inputs the observations and the map into the model, and publishes actions to the `/waypoint` topic.
-3. `python joy_teleop.py`: This python script starts a node that reads inputs from the joy topic and outputs them on topics that teleoperate the robot’s base.
-4. `python pd_controller.py`: This python script starts a node that reads messages from the `/waypoint` topic (waypoints from the model) and outputs velocities to navigate the robot’s base.
-
-When the robot is finishing navigating, kill the `pd_controller.py` script, and then kill the tmux session. If you want to take control of the robot while it is navigating, the `joy_teleop.py` script allows you to do so with the joystick.
-
-#### Exploration
-_Make sure to run this script inside the `vint_release/deployment/src/` directory._
+#### 探索
+_确保在`vint_release/deployment/src/`目录中运行此脚本。_
 
 ```bash
 ./exploration.sh “--model <model_name>”
 ```
 
-To deploy one of the models from the published results, we are releasing model checkpoints that you can download from [this link](https://drive.google.com/drive/folders/1a9yWR2iooXFAqjQHetz263--4_2FFggg?usp=sharing).
+要部署已发布结果中的模型之一，我们发布了可以从[此链接](https://drive.google.com/drive/folders/1a9yWR2iooXFAqjQHetz263--4_2FFggg?usp=sharing)下载的模型检查点。
 
+`<model_name>`是`vint_release/deployment/config/models.yaml`文件中模型的名称（请注意，只有NoMaD适用于探索）。在此文件中，您为每个模型指定这些参数（使用默认值）：
+- `config_path`（str）：用于训练模型的`vint_release/train/config/`中的*.yaml文件的路径
+- `ckpt_path`（str）：`vint_release/deployment/model_weights/`中*.pth文件的路径
 
-The `<model_name>` is the name of the model in the `vint_release/deployment/config/models.yaml` file (note that only NoMaD works for exploration). In this file, you specify these parameters of the model for each model (defaults used):
-- `config_path` (str): path of the *.yaml file in `vint_release/train/config/` used to train the model
-- `ckpt_path` (str): path of the *.pth file in `vint_release/deployment/model_weights/`
+确保这些配置与您用于训练模型的配置匹配。我们提供权重的模型的配置在yaml文件中供您参考。
 
+`<topomap_dir>`是`vint_release/deployment/topomaps/images`中包含与拓扑图节点对应的图像的目录名称。图像按名称从0到N排序。
 
-Make sure these configurations match what you used to train the model. The configurations for the models we provided the weights for are provided in yaml file for your reference.
+此命令将打开4个窗口：
 
-The `<topomap_dir>` is the name of the directory in `vint_release/deployment/topomaps/images` that has the images corresponding to the nodes in the topological map. The images are ordered by name from 0 to N.
+1. `roslaunch vint_locobot.launch`：此启动文件打开相机的usb_cam节点、操纵杆的joy节点和机器人的移动底盘的多个节点。
+2. `python explore.py --model <model_name>`：此python脚本启动一个节点，从`/usb_cam/image_raw`主题读取图像观察，将观察和地图输入模型，并将探索动作发布到`/waypoint`主题。
+3. `python joy_teleop.py`：此python脚本启动一个节点，读取joy主题的输入并将其输出到遥控机器人的底盘的主题上。
+4. `python pd_controller.py`：此python脚本启动一个节点，从`/waypoint`主题（来自模型的航点）读取消息并输出速度以导航机器人的底盘。
 
-This command opens up 4 windows:
+当机器人完成导航时，终止`pd_controller.py`脚本，然后终止tmux会话。如果您希望在机器人导航时控制它，`joy_teleop.py`脚本允许您使用操纵杆进行控制。
 
-1. `roslaunch vint_locobot.launch`: This launch file opens the usb_cam node for the camera, the joy node for the joystick, and several nodes for the robot’s mobile base.
-2. `python explore.py --model <model_name>`: This python script starts a node that reads in image observations from the `/usb_cam/image_raw` topic, inputs the observations and the map into the model, and publishes exploration actions to the `/waypoint` topic.
-3. `python joy_teleop.py`: This python script starts a node that reads inputs from the joy topic and outputs them on topics that teleoperate the robot’s base.
-4. `python pd_controller.py`: This python script starts a node that reads messages from the `/waypoint` topic (waypoints from the model) and outputs velocities to navigate the robot’s base.
+### 将此代码适应不同的机器人
 
-When the robot is finishing navigating, kill the `pd_controller.py` script, and then kill the tmux session. If you want to take control of the robot while it is navigating, the `joy_teleop.py` script allows you to do so with the joystick.
-
-
-### Adapting this code to different robots
-
-We hope that this codebase is general enough to allow you to deploy it to your favorite ROS-based robots. You can change the robot configuration parameters in `vint_release/deployment/config/robot.yaml`, like the max angular and linear velocities of the robot and the topics to publish to teleop and control the robot. Please feel free to create a Github Issue or reach out to the authors at shah@cs.berkeley.edu.
-
-
-## Citing
-```
-@inproceedings{shah2022gnm,
-  author    = {Dhruv Shah and Ajay Sridhar and Arjun Bhorkar and Noriaki Hirose and Sergey Levine},
-  title     = {{GNM: A General Navigation Model to Drive Any Robot}},
-  booktitle = {International Conference on Robotics and Automation (ICRA)},
-  year      = {2023},
-  url       = {https://arxiv.org/abs/2210.03370}
-}
-
-@inproceedings{shah2023vint,
-  title     = {Vi{NT}: A Foundation Model for Visual Navigation},
-  author    = {Dhruv Shah and Ajay Sridhar and Nitish Dashora and Kyle Stachowicz and Kevin Black and Noriaki Hirose and Sergey Levine},
-  booktitle = {7th Annual Conference on Robot Learning},
-  year      = {2023},
-  url       = {https://arxiv.org/abs/2306.14846}
-}
-
-@article{sridhar2023nomad,
-  author  = {Ajay Sridhar and Dhruv Shah and Catherine Glossop and Sergey Levine},
-  title   = {{NoMaD: Goal Masked Diffusion Policies for Navigation and Exploration}},
-  journal = {arXiv pre-print},
-  year    = {2023},
-  url     = {https://arxiv.org/abs/2310.xxxx}
-}
-```
+我们希望此代码库足够通用，以便您可以将其部署到您喜欢的基于ROS的机器人。您可以在`vint_release/deployment/config/robot.yaml`中更改机器人配置参数，例如机器人的最大角速度和线速度以及发布到遥控和控制机器人的主题。请随时创建GitHub问题或通过电子邮件与作者联系，邮箱为shah@cs.berkeley.edu。
