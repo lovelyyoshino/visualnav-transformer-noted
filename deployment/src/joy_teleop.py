@@ -14,7 +14,7 @@ with open(CONFIG_PATH, "r") as f:
 	robot_config = yaml.safe_load(f)
 MAX_V = 0.4
 MAX_W = 0.8
-VEL_TOPIC = robot_config["vel_teleop_topic"]
+VEL_TOPIC = robot_config["vel_teleop_topic"]   # for issac
 JOY_CONFIG_PATH = "../config/joystick.yaml"
 with open(JOY_CONFIG_PATH, "r") as f:
 	joy_config = yaml.safe_load(f)

@@ -18,7 +18,7 @@ with open(CONFIG_PATH, "r") as f:
 	robot_config = yaml.safe_load(f)
 MAX_V = robot_config["max_v"]
 MAX_W = robot_config["max_w"]
-VEL_TOPIC = robot_config["vel_navi_topic"]
+VEL_TOPIC = robot_config["vel_navi_topic"]  # for issac
 DT = 1/robot_config["frame_rate"]
 RATE = 9
 EPS = 1e-8

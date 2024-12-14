@@ -3,7 +3,9 @@
 # 图像观察主题
 FRONT_IMAGE_TOPIC = "/usb_cam_front/image_raw"  # 前方摄像头捕获的原始图像数据
 REVERSE_IMAGE_TOPIC = "/usb_cam_reverse/image_raw"  # 后方摄像头捕获的原始图像数据
-IMAGE_TOPIC = "/usb_cam/image_raw"  # 通用摄像头捕获的原始图像数据
+#IMAGE_TOPIC = "/usb_cam/image_raw"  # 通用摄像头捕获的原始图像数据
+IMAGE_TOPIC = "/rgb"   # for issac
+
 
 # 探索相关主题
 SUBGOALS_TOPIC = "/subgoals"  # 子目标列表，用于导航和路径规划

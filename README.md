@@ -164,11 +164,11 @@ python train.py -c <path_of_train_config_file>
         ```
     - 激活环境 
         ```bash
-        conda activate vint_deployment
+        conda activate nomad_train
         ```
     - （推荐）添加到`~/.bashrc`： 
         ```bash
-        echo “conda activate vint_deployment” >> ~/.bashrc 
+        echo “conda activate nomad_train” >> ~/.bashrc 
         ```
 5. 安装`vint_train`包（在`vint_release/`目录中运行）。命令用于在开发模式下安装 Python 包，其中 -e 代表“editable”：
     ```bash
@@ -274,6 +274,50 @@ _确保在`vint_release/deployment/src/`目录中运行此脚本。_
 
 当机器人完成导航时，终止`pd_controller.py`脚本，然后终止tmux会话。如果您希望在机器人导航时控制它，`joy_teleop.py`脚本允许您使用操纵杆进行控制。
 
-### 将此代码适应不同的机器人
 
-我们希望此代码库足够通用，以便您可以将其部署到您喜欢的基于ROS的机器人。您可以在`vint_release/deployment/config/robot.yaml`中更改机器人配置参数，例如机器人的最大角速度和线速度以及发布到遥控和控制机器人的主题。请随时创建GitHub问题或通过电子邮件与作者联系，邮箱为shah@cs.berkeley.edu。
+### Isaac-Sim-NoMaD 工作流程
+
+#### 步骤 1：录制 Rosbag
+1. 进入 `visualnav-transformer/deployment/src/` 目录：
+   ```bash
+   cd visualnav-transformer/deployment/src/
+   ```
+
+2. 执行脚本开始录制：
+   ```bash
+   sh record_bag_isaac.sh
+   ```
+
+3. 在新终端中，进入 topomaps 目录：
+   ```bash
+   cd ../topomaps/bags
+   ```
+
+4. 将相关主题录制到 Rosbag 中：
+   ```bash
+   rosbag record /rgb /odom -O warehouse_turtlebot
+   ```
+
+5. 完成后，立即按 `Ctrl+C` 停止录制。
+
+#### 步骤 2：创建拓扑图
+1. 返回 `visualnav-transformer/deployment/src/` 目录：
+   ```bash
+   cd visualnav-transformer/deployment/src/
+   ```
+
+2. 运行脚本以创建拓扑图：
+   ```bash
+   sh create_topomap_isaac.sh <topomap_name> <bag_filename> <rosbag_playback_rate>
+   ```
+
+   例如：
+   ```bash
+   sh create_topomap_isaac.sh warehouse_turtlebot warehouse_turtlebot 1.5
+   ```
+
+#### 步骤 3：使用预训练模型导航
+1. 仍在 `visualnav-transformer/deployment/src/` 目录中，执行导航脚本：
+   ```bash
+   sh navigate_isaac.sh
+   ```
