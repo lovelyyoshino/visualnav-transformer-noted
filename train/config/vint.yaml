@@ -1,4 +1,4 @@
-project_name: vint-release  # 项目名称
+project_name: vint  # 项目名称
 run_name: vint-5c            # 运行名称
 
 # training setup

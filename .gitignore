@@ -16,7 +16,7 @@ deployment/topomaps/*
 
 .vscode/*
 */.vscode/*
-
+dataset/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

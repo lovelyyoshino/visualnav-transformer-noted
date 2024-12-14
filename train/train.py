@@ -409,7 +409,7 @@ if __name__ == "__main__":
         wandb.init(
             project=config["project_name"],
             settings=wandb.Settings(start_method="fork"),
-            entity="gnmv2", # TODO: change this to your wandb entity
+            entity="mpl9725440-pony", # TODO: change this to your wandb entity
         )
         wandb.save(args.config, policy="now")  # 保存配置文件
         wandb.run.name = config["run_name"]

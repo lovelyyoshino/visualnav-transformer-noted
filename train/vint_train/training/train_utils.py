@@ -619,7 +619,7 @@ def train_nomad(
     epoch: int,
     alpha: float = 1e-4,
     print_log_freq: int = 100,
-    wandb_log_freq: int = 10,
+    wandb_log_freq: int = 100,
     image_log_freq: int = 1000,
     num_images_log: int = 8,
     use_wandb: bool = True,
@@ -755,9 +755,15 @@ def train_nomad(
             # 日志记录
             loss_cpu = loss.item()
             tepoch.set_postfix(loss=loss_cpu)
-            wandb.log({"total_loss": loss_cpu})
-            wandb.log({"dist_loss": dist_loss.item()})
-            wandb.log({"diffusion_loss": diffusion_loss.item()})
+            if use_wandb and i % wandb_log_freq == 0 and wandb_log_freq != 0:
+                wandb.log({"total_loss": loss_cpu})
+                wandb.log({"dist_loss": dist_loss.item()})
+                wandb.log({"diffusion_loss": diffusion_loss.item()})
+            elif use_wandb == False and i % print_log_freq == 0 and print_log_freq != 0:
+                print(f"Total Loss: {loss_cpu}")
+                print(f"Dist Loss: {dist_loss.item()}")
+                print(f"Diffusion Loss: {diffusion_loss.item()}")
+
 
             if i % print_log_freq == 0:
                 losses = _compute_losses_nomad(
@@ -817,7 +823,7 @@ def evaluate_nomad(
     project_folder: str,
     epoch: int,
     print_log_freq: int = 100,
-    wandb_log_freq: int = 10,
+    wandb_log_freq: int = 100,
     image_log_freq: int = 1000,
     num_images_log: int = 8,
     eval_fraction: float = 0.25,
@@ -966,10 +972,15 @@ def evaluate_nomad(
             # 日志记录
             loss_cpu = rand_mask_loss.item()
             tepoch.set_postfix(loss=loss_cpu)
+            if use_wandb  and i % wandb_log_freq == 0 and wandb_log_freq != 0:
+                wandb.log({"diffusion_eval_loss (random masking)": rand_mask_loss})
+                wandb.log({"diffusion_eval_loss (no masking)": no_mask_loss})
+                wandb.log({"diffusion_eval_loss (goal masking)": goal_mask_loss})
+            elif use_wandb == False and i % print_log_freq == 0 and print_log_freq != 0:
+                print(f"diffusion_eval_loss (random masking): {rand_mask_loss}")
+                print(f"diffusion_eval_loss (no masking): {no_mask_loss}")
+                print(f"diffusion_eval_loss (goal masking): {goal_mask_loss}")
 
-            wandb.log({"diffusion_eval_loss (random masking)": rand_mask_loss})
-            wandb.log({"diffusion_eval_loss (no masking)": no_mask_loss})
-            wandb.log({"diffusion_eval_loss (goal masking)": goal_mask_loss})
 
             if i % print_log_freq == 0 and print_log_freq != 0:
                 losses = _compute_losses_nomad(
