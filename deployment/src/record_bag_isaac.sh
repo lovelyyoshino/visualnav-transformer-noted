@@ -18,9 +18,12 @@ tmux selectp -t 0    # go back to the first pane
 tmux select-pane -t 0
 tmux send-keys "roscore" Enter
 
+# 暂停5秒
+tmux send-keys "sleep 2" Enter
+
 # Run the navigate.py script with command line args in the second pane
 tmux select-pane -t 1
-tmux send-keys "conda activate nomad" Enter
+tmux send-keys "conda activate issac_lab" Enter
 tmux send-keys "cd ../../isaac_sim_ros/scripts" Enter
 tmux send-keys "python ros_warehouse_turtlebot.py" Enter
 
@@ -31,6 +34,7 @@ tmux send-keys "rviz -d warehouse_turtlebot.rviz" Enter
 
 # Run the pd_controller.py script in the fourth pane
 tmux select-pane -t 3
+tmux send-keys "conda deactivate"
 tmux send-keys "rosrun teleop_twist_keyboard teleop_twist_keyboard.py" Enter
 
 # Attach to session

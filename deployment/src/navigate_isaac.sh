@@ -40,12 +40,12 @@ tmux send-keys "rviz -d warehouse_turtlebot.rviz" Enter
 
 # Run the pd_controller.py script in the fourth pane
 tmux select-pane -t 3
-tmux send-keys "conda activate nomad_train" Enter
+tmux send-keys "conda activate issac_lab" Enter
 tmux send-keys "python pd_controller.py" Enter
 
 # Run the navigate.py script with command line args in the fifth pane
 tmux select-pane -t 4
-tmux send-keys "conda activate nomad_train" Enter
+tmux send-keys "conda activate issac_lab" Enter
 tmux send-keys "sleep 2; python navigate.py --model nomad --dir warehouse_turtlebot" Enter
 
 # Run the pd_controller.py script in the sixth pane

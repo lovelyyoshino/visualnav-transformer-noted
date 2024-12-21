@@ -27,7 +27,7 @@ if not rosgraph.is_master_online():
     simulation_app.close()
     exit()
 
-usd_path =  "../assets/ROS_Warehouse_Turtlebot.usd"
+usd_path =  "/home/arthur/Desktop/Turtle_home.usd"
 omni.usd.get_context().open_stage(usd_path, None)
 
 # Wait two frames so that stage starts loading
@@ -43,7 +43,7 @@ print("Loading Complete")
 
 simulation_context = SimulationContext(stage_units_in_meters=1.0)
 
-ros_cameras_graph_path = "/World/Turtlebot3_Camera/turtlebot3_burger/ROS_Cameras"
+ros_cameras_graph_path = "/World/turtlebot3_burger/ActionGraph"
 
 # Enabling rgb aimage publishers for left camera. Cameras will automatically publish images each frame
 og.Controller.set(
